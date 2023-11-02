@@ -98,6 +98,7 @@ class GoldMine():
 			for space in self.spaces:
 				if tank.position.x == space.x and tank.position.y == space.y: tanksInMine.append(tank)
 		
+		if not tanksInMine: return
 		awardPerTank = self.goldPerDay // len(tanksInMine)
 		for tank in tanksInMine:
 			tank.gold += awardPerTank
@@ -211,12 +212,43 @@ if __name__ == "__main__":
 	board = Board(9, 9)
 	
 	mine = GoldMine()
-	mine.AddSpace(Position(2, 2))
-	mine.AddSpace(Position(4, 1))
+	mine.AddSpace(Position(3, 3))
+	mine.AddSpace(Position(4, 3))
+	mine.AddSpace(Position(5, 3))
+	mine.AddSpace(Position(3, 4))
+	mine.AddSpace(Position(4, 4))
+	mine.AddSpace(Position(5, 4))
+	mine.AddSpace(Position(3, 5))
+	mine.AddSpace(Position(4, 5))
+	mine.AddSpace(Position(5, 5))
 	board.goldMines.append(mine)
 	
-	board.AddTank(Position(2, 2), "Ryan")
-	board.AddTank(Position(4, 1), "Beyer")
+	board.AddWall(Position(3, 2))
+	board.AddWall(Position(4, 2))
+	board.AddWall(Position(5, 2))
+	board.AddWall(Position(6, 3))
+	board.AddWall(Position(6, 4))
+	board.AddWall(Position(6, 5))
+	board.AddWall(Position(5, 6))
+	board.AddWall(Position(4, 6))
+	board.AddWall(Position(3, 6))
+	board.AddWall(Position(2, 5))
+	board.AddWall(Position(2, 4))
+	board.AddWall(Position(2, 3))
+	
+	board.AddTank(Position(1, 1), "Ryan")
+	board.AddTank(Position(3, 0), "Beyer")
+	board.AddTank(Position(5, 0), "Taylore")
+	board.AddTank(Position(7, 1), "John")
+	board.AddTank(Position(8, 3), "Marci")
+	board.AddTank(Position(8, 5), "Stomp")
+	board.AddTank(Position(7, 7), "David K.")
+	board.AddTank(Position(5, 8), "David Y.")
+	board.AddTank(Position(3, 8), "Dan")
+	board.AddTank(Position(1, 7), "Corey")
+	board.AddTank(Position(0, 5), "Mike")
+	board.AddTank(Position(0, 3), "Ty")
+	
 	print("INITIAL SETUP")
 	PrintTanks(board)
 	
