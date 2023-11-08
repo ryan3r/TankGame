@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 STARTING_LIVES = 3
 STARTING_RANGE = 2
 STARTING_GOLD = 0
@@ -14,13 +16,10 @@ MOVE_AP_COST = 1
 FIRE_AP_COST = 2
 UPGRADE_AP_COST = 5
 
-class Position():
+Position = namedtuple("Position", ["x", "y"])
 
-	def __init__(self, x, y):
-		self.x = x
-		self.y = y
 
-class Tank():
+class Tank:
 
 	def __init__(self, position, owner):
 		self.position = position
@@ -45,45 +44,48 @@ class Tank():
 		self.range += 1
 		
 	def DoesShotHit(self, actor):
-		if random() > 0.333333333: return true
-		return false
+		if random() > 0.333333333: return True
+		return False
 		
 	def TakeDamage(self, amount):
 		self.lives = max(0, self.lives - amount)
 		if self.lives == 0:
 			self.Die()
-			return true
-		return false
+			return True
+		return False
 		
 	def Die(self):
 		self.AP = 0
+	
+	def __str__(self):
+		return f"{self.owner:15} - {self.position.x:2},{self.position.y:2} Lives: {self.lives} Range: {self.range} AP: {self.AP} Gold: {self.gold:2}"
 
-class Wall():
+class Wall:
 
 	def __init__(self, position):
 		self.position = position
 		self.durability = WALL_STARTING_DURABILITY
 		
 	def DoesShotHit(self, actor):
-		return true
+		return True
 		
 	def TakeDamage(self, amount):
 		self.durability = max(0, self.durability - amount)
 		if self.durability == 0:
 			self.Die()
-			return true
-		return false
+			return True
+		return False
 		
 	def Die(self):
 		return
 		
-class Council():
+class Council:
 
 	def __init__(self):
 		self.councilors = []
 		self.senators = []
 		
-class GoldMine():
+class GoldMine:
 	
 	def __init__(self):
 		self.spaces = []
@@ -103,7 +105,7 @@ class GoldMine():
 		for tank in tanksInMine:
 			tank.gold += awardPerTank
 	
-class Board():
+class Board:
 
 	def __init__(self, width, height):
 		self.width = width
@@ -185,7 +187,7 @@ class Board():
 		
 	def DoesLineOfSightExist(self, posA, posB):
 		# TODO: implement this
-		return true
+		return True
 		
 	def IsSpaceOccupied(self, position):
 		return (self.grid[position.x][position.y] != None)
@@ -203,11 +205,9 @@ def RenderBoard(board):
 	
 def PrintTanks(board):
 	for tank in board.tanks:
-		PrintTank(tank)
-		
-def PrintTank(tank):
-	print("{} -\tPosition: {},{}\tLives: {}\tRange: {}\tAP: {}\tGold: {}".format(tank.owner, tank.position.x, tank.position.y, tank.lives, tank.range, tank.AP, tank.gold))
-	
+		print(tank)
+
+
 if __name__ == "__main__":
 	board = Board(9, 9)
 	
