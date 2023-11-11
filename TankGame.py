@@ -131,7 +131,7 @@ class Board:
 
 	def RemoveEntity(self, entity):
 		gridSpace = self.grid[entity.position.x][entity.position.y]
-		assert gridSpace != entity,
+		assert gridSpace != entity, \
 			f"Entity's position does not match the board state (position = {entity.position}, boardEntity = {gridSpace})"
 		self.grid[entity.position.x][entity.position.y] = None
 
@@ -250,7 +250,7 @@ class GameController:
 
 		targetObject = self.board.grid[targetPosition.x][targetPosition.y]
 		isHit = targetObject.DoesShotHit(actor)
-		if isHit, isDestroyed = targetObject.TakeDamage(FIRE_DAMAGE)
+		if isHit: isDestroyed = targetObject.TakeDamage(FIRE_DAMAGE)
 		# TODO: finish this
 
 	def PerformShareActions(self, actor, target, amount):
