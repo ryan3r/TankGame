@@ -1,4 +1,7 @@
+import logging
 from collections import namedtuple
+
+logger = logging.getLogger(__name__)
 
 STARTING_LIVES = 3
 STARTING_RANGE = 2
@@ -155,7 +158,47 @@ class Board:
 
 		ignoredEntities - A list of types of entities that will not block line of sight
 		"""
-		# TODO: implement this
+		# Vertical lines doesn't work for slow intercept form but we can simply walk the spaces between the target and initiator
+		if target.position.x == initiator.position.x:
+			direction = -1 if target.position.y - initiator.position.y < 0 else 1
+			for y in range(initiator.position.y + direction, target.position.y, direction):
+				entity = self.grid[target.position.x][y]
+				if entity is not None and type(entity) not in ignoredEntities:
+					logger.debug("Vertical hit: %s", entity)
+					return False
+
+			return True
+
+		min_x = min(initiator.position.x, target.position.x)
+		max_x = max(initiator.position.x, target.position.x)
+		min_y = min(initiator.position.y, target.position.y)
+		max_y = max(initiator.position.y, target.position.y)
+
+		# Find all entitys that we could intercept with this is important because the lines we use in our equations are
+		# infinatly long.  So we don't want to check if entitys behind the target intercept with our line of sight because
+		# the next part would say they do.
+		possible_intercepts = []
+		for x in range(min_x, max_x + 1):
+			for y in range(min_y, max_y + 1):
+				current = Position(x, y)
+				if self.grid[x][y] is not None and initiator.position != current and target.position != current \
+						and type(self.grid[x][y]) not in ignoredEntities:
+					possible_intercepts.append(self.grid[x][y])
+
+		logger.debug("Possible intercepts: %s", possible_intercepts)
+
+		slope = (target.position.y - initiator.position.y) / (target.position.x - initiator.position.x)
+		b = (initiator.position.y + 0.5) - (slope * initiator.position.x)
+
+		logger.debug("Line of sight equation: y = %dx + %d", slope, b)
+
+		for intercept in possible_intercepts:
+			line_y = (slope * intercept.position.x) + b
+			logger.debug("Checking if %s intercepts with line of sight Los(%d) = %d", intercept.position, intercept.position.x, line_y)
+			if abs(line_y - (intercept.position.y + 0.5)) < 0.4999:
+				logger.debug(f"Hit %s", intercept.position)
+				return False
+
 		return True
 
 

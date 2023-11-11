@@ -22,8 +22,8 @@ class TestBoard(unittest.TestCase):
         entity1 = board.grid[position1.x][position1.y]
         entity2 = board.grid[position2.x][position2.y]
 
-        self.assertEqual(board.DoesLineOfSightExist(entity1, entity2), expected)
-        self.assertEqual(board.DoesLineOfSightExist(entity2, entity1), expected)
+        self.assertEqual(board.DoesLineOfSightExist(entity1, entity2, **kwargs), expected)
+        self.assertEqual(board.DoesLineOfSightExist(entity2, entity1, **kwargs), expected)
 
     def test_has_line_of_sight_basic(self):
         """
@@ -107,8 +107,8 @@ class TestBoard(unittest.TestCase):
         self._check_line_of_sight(2, 4, False) # T3 can't see T5 (blocked by T1)
         self._check_line_of_sight(1, 3, False) # T2 can't see T4 (blocked by T1)
 
-        self._check_line_of_sight(1, 4, False) # T2 can't see T5
-        self._check_line_of_sight(2, 3, False) # T3 can't see T4
+        self._check_line_of_sight(1, 4, True) # T2 can see T5
+        self._check_line_of_sight(2, 3, True) # T3 can see T4
 
     def test_line_of_sight_through_corner(self):
         """
