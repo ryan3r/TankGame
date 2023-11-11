@@ -129,6 +129,12 @@ class Board:
 
 		self.grid[entity.position.x][entity.position.y] = entity
 
+	def RemoveEntity(self, entity):
+		gridSpace = self.grid[entity.position.x][entity.position.y]
+		assert gridSpace != entity,
+			f"Entity's position does not match the board state (position = {entity.position}, boardEntity = {gridSpace})"
+		self.grid[entity.position.x][entity.position.y] = None
+
 	def Render(self):
 		"""Render the game board to stdout using a series of 2 character tiles to represent each space."""
 		for y in range(self.height):
@@ -244,7 +250,7 @@ class GameController:
 
 		targetObject = self.board.grid[targetPosition.x][targetPosition.y]
 		isHit = targetObject.DoesShotHit(actor)
-		if isHit: isDestroyed = targetObject.TakeDamage(FIRE_DAMAGE)
+		if isHit, isDestroyed = targetObject.TakeDamage(FIRE_DAMAGE)
 		# TODO: finish this
 
 	def PerformShareActions(self, actor, target, amount):
