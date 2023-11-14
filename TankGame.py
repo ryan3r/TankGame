@@ -38,7 +38,7 @@ class Tank:
 
 	def PerformMove(self, targetPos):
 		self.AP -= MOVE_AP_COST
-		self.position = target
+		self.position = targetPos
 		self._totalMoves += 1
 
 	def PerformFire(self):
@@ -51,10 +51,6 @@ class Tank:
 	def GainAP(self, amount_to_gain):
 		self.AP = min(AP_MAX, self.AP + amount_to_gain)
 
-	def DoesShotHit(self, actor):
-		if random() > 0.333333333: return True
-		return False
-
 	def TakeDamage(self, actor, amount):
 		remove_from_board = False
 		gained_AP = 0
@@ -62,13 +58,12 @@ class Tank:
 		gained_kills = 0
 		gained_lives = 0
 		
-		if self.DoesShotHit(actor):
-			self.lives = max(0, self.lives - amount)
-			if self.lives == 0:
-				gained_gold = 3 if self.gold == 0 else self.gold
-				gained_kills = 1
-				self._Die()
-				remove_from_board = True
+		self.lives = max(0, self.lives - amount)
+		if self.lives == 0:
+			gained_gold = 3 if self.gold == 0 else self.gold
+			gained_kills = 1
+			self._Die()
+			remove_from_board = True
 			
 		return remove_from_board, AttackDrops(AP = gained_AP, gold = gained_gold, kills = gained_kills, lives = gained_lives)
 		
@@ -90,9 +85,6 @@ class Wall:
 		self.position = position
 		self.durability = WALL_STARTING_DURABILITY
 
-	def DoesShotHit(self, actor):
-		return True
-
 	def TakeDamage(self, amount):
 		remove_from_board = False
 		gained_AP = 0
@@ -100,10 +92,9 @@ class Wall:
 		gained_kills = 0
 		gained_lives = 0
 		
-		if self.DoesShotHit(actor):
-			self.durability = max(0, self.durability - amount)
-			if self.durability == 0:
-				remove_from_board = True
+		self.durability = max(0, self.durability - amount)
+		if self.durability == 0:
+			remove_from_board = True
 			
 		return remove_from_board, AttackDrops(AP = gained_AP, gold = gained_gold, kills = gained_kills, lives = gained_lives)
 
@@ -155,7 +146,7 @@ class Board:
 
 	def RemoveEntity(self, entity):
 		gridSpace = self.grid[entity.position.x][entity.position.y]
-		assert gridSpace != entity, \
+		assert gridSpace is entity, \
 			f"Entity's position does not match the board state (position = {entity.position}, boardEntity = {gridSpace})"
 		self.grid[entity.position.x][entity.position.y] = None
 
@@ -262,24 +253,27 @@ class GameController:
 		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, targetPosition)
 		if dist > 1: raise Exception("Must only move 1 space at a time.")
-		if self.IsSpaceOccupied(targetPosition): raise Exception("targetPosition position is occupied.")
+		if self.board.IsSpaceOccupied(targetPosition): raise Exception("targetPosition position is occupied.")
 		if actor.AP < MOVE_AP_COST: raise Expection("Not enough AP to move.")
+		self.board.RemoveEntity(actor)
 		actor.PerformMove(targetPosition)
+		self.board.AddEntity(actor)
 
-	def PerformFire(self, owner, targetPosition):
+	def PerformFire(self, owner, targetPosition, doesHit=True):
 		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, targetPosition)
 		if dist > actor.range: raise Exception("targetPosition is out of range.")
 		if actor.AP < FIRE_AP_COST: raise Expection("Not enough AP to Fire.")
-		if not self.board.DoesLineOfSightExist(actor.position, targetPosition): raise Exception("No line of sight on targetPosition.")
+		targetObject = self.board.grid[targetPosition.x][targetPosition.y]
+		if not self.board.DoesLineOfSightExist(actor, targetObject): raise Exception("No line of sight on targetPosition.")
 		
 		actor.PerformFire()
-		targetObject = self.board.grid[targetPosition.x][targetPosition.y]
-		remove_from_board, attack_drops = targetObject.TakeDamage(actor, FIRE_DAMAGE)
-		actor.GainAttackDrops(attack_drops)
-		if remove_from_board:
-			self.board.RemoveEntity(targetObject)
-			# TODO: add TankWall if necessary
+		if doesHit:
+			remove_from_board, attack_drops = targetObject.TakeDamage(actor, FIRE_DAMAGE)
+			actor.GainAttackDrops(attack_drops)
+			if remove_from_board:
+				self.board.RemoveEntity(targetObject)
+				# TODO: add TankWall if necessary
 
 	def PerformShareActions(self, owner, target, amount):
 		actor = self._GetTankByOwner(owner)
@@ -391,5 +385,55 @@ if __name__ == "__main__":
 	print("START OF DAY 1")
 	PrintTanks(controller)
 	controller.board.Render()
+	print()
 	
+	controller.PerformMove("Corey", AlgebraicNotationToPosition("B7"))
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
 	
+	controller.PerformMove("Dan", AlgebraicNotationToPosition("C8"))
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
+	
+	controller.PerformMove("Dan", AlgebraicNotationToPosition("C7"))
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
+	
+	controller.PerformMove("Ty", AlgebraicNotationToPosition("B4"))
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
+	
+	controller.PerformFire("Ryan", AlgebraicNotationToPosition("B4"), True)
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
+	
+	controller.PerformMove("John", AlgebraicNotationToPosition("G3"))
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
+	
+	controller.PerformMove("Marci", AlgebraicNotationToPosition("I5"))
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
+	
+	controller.PerformMove("DK", AlgebraicNotationToPosition("I7"))
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
+	
+	controller.PerformMove("Ty", AlgebraicNotationToPosition("A5"))
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
+	
+	controller.StartOfTurn()
+	print("START OF DAY 2")
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
