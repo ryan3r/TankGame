@@ -46,6 +46,9 @@ class Tank:
 	def PerformUpgrade(self):
 		self.AP -= UPGRADE_AP_COST
 		self.range += 1
+		
+	def GainAP(self, amount_to_gain):
+		self.AP = min(AP_MAX, self.AP + amount_to_gain)
 
 	def DoesShotHit(self, actor):
 		if random() > 0.333333333: return True
@@ -228,7 +231,7 @@ class GameController:
 
 	def StartOfTurn(self):
 		for tank in self.tanks:
-			if tank.lives > 0: tank.AP = min(AP_MAX, tank.AP + AP_PER_TURN)
+			if tank.lives > 0: tank.GainAP(AP_PER_TURN)
 
 		if not self.goldMines: return
 		for mine in self.goldMines:
@@ -259,7 +262,7 @@ class GameController:
 		cost = DetermineShareCost(amount)
 		if actor.AP < (amount + cost): raise Exception("Not enough AP to Share.")
 		actor.AP -= (amount + cost)
-		target.AP += amount
+		target.GainAP(amount)
 
 	def PerformShareLife(self, actor, target):
 		dist = Distance(actor.position, target.position)
@@ -271,7 +274,7 @@ class GameController:
 		if actor.gold < amount: raise Exception("Not enough gold.")
 		ap_value = DetermineTradeValue(amount)
 		actor.gold -= amount
-		actor.AP += ap_value
+		actor.GainAP(ap_value)
 
 	def PerformUpgrade(self, actor):
 		if actor.AP < UPGRADE_AP_COST: raise Exception("Not enough AP to Upgrade.")
