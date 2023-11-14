@@ -20,6 +20,7 @@ FIRE_AP_COST = 2
 UPGRADE_AP_COST = 5
 
 Position = namedtuple("Position", ["x", "y"])
+AttackDrops = namedtuple("AttackDrops", ["AP", "gold", "kills", "lives"])
 
 
 class Tank:
@@ -54,14 +55,30 @@ class Tank:
 		if random() > 0.333333333: return True
 		return False
 
-	def TakeDamage(self, amount):
-		self.lives = max(0, self.lives - amount)
-		if self.lives == 0:
-			self.Die()
-			return True
-		return False
+	def TakeDamage(self, actor, amount):
+		remove_from_board = False
+		gained_AP = 0
+		gained_gold = 0
+		gained_kills = 0
+		gained_lives = 0
+		
+		if self.DoesShotHit(actor):
+			self.lives = max(0, self.lives - amount)
+			if self.lives == 0:
+				gained_gold = 3 if self.gold is 0 else self.gold
+				gained_kills = 1
+				self._Die()
+				remove_from_board = True
+			
+		return remove_from_board, AttackDrops(AP = gained_AP, gold = gained_gold, kills = gained_kills, lives = gained_lives)
+		
+	def GainAttackDrops(self, drops):
+		self.GainAP(drops.AP)
+		self.gold += drops.gold
+		self.kills += drops.kills
+		self.lives += drops.lives
 
-	def Die(self):
+	def _Die(self):
 		self.AP = 0
 
 	def __str__(self):
@@ -77,14 +94,18 @@ class Wall:
 		return True
 
 	def TakeDamage(self, amount):
-		self.durability = max(0, self.durability - amount)
-		if self.durability == 0:
-			self.Die()
-			return True
-		return False
-
-	def Die(self):
-		return
+		remove_from_board = False
+		gained_AP = 0
+		gained_gold = 0
+		gained_kills = 0
+		gained_lives = 0
+		
+		if self.DoesShotHit(actor):
+			self.durability = max(0, self.durability - amount)
+			if self.durability == 0:
+				remove_from_board = True
+			
+		return remove_from_board, AttackDrops(AP = gained_AP, gold = gained_gold, kills = gained_kills, lives = gained_lives)
 
 	@property
 	def tile(self):
@@ -249,25 +270,30 @@ class GameController:
 		if dist > actor.range: raise Exception("targetPosition is out of range.")
 		if actor.AP < FIRE_AP_COST: raise Expection("Not enough AP to Fire.")
 		if not self.board.DoesLineOfSightExist(actor.position, targetPosition): raise Exception("No line of sight on targetPosition.")
+		
 		actor.PerformFire()
-
 		targetObject = self.board.grid[targetPosition.x][targetPosition.y]
-		isHit = targetObject.DoesShotHit(actor)
-		if isHit: isDestroyed = targetObject.TakeDamage(FIRE_DAMAGE)
-		# TODO: finish this
+		remove_from_board, attack_drops = targetObject.TakeDamage(actor, FIRE_DAMAGE)
+		actor.GainAttackDrops(attack_drops)
+		if remove_from_board:
+			self.board.RemoveEntity(targetObject)
+			# TODO: add TankWall if necessary
 
 	def PerformShareActions(self, actor, target, amount):
 		dist = Distance(actor.position, target.position)
 		if dist > actor.range: raise Exception("target is out of range.")
 		cost = DetermineShareCost(amount)
 		if actor.AP < (amount + cost): raise Exception("Not enough AP to Share.")
+		# TODO: check if player has done share today
 		actor.AP -= (amount + cost)
 		target.GainAP(amount)
 
 	def PerformShareLife(self, actor, target):
 		dist = Distance(actor.position, target.position)
 		if dist > actor.range: raise Exception("target is out of range.")
+		# TODO: check if player has done share today
 		actor.lives -= 1
+		# TODO: check if player is dead now
 		if target.lives != 3: target.lives += 1
 
 	def PerformTradeGold(self, actor, amount):
