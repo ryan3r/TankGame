@@ -258,14 +258,16 @@ class GameController:
 		for mine in self.goldMines:
 			mine.AwardGold(self.tanks)
 
-	def PerformMove(self, actor, targetPosition):
+	def PerformMove(self, owner, targetPosition):
+		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, targetPosition)
 		if dist > 1: raise Exception("Must only move 1 space at a time.")
 		if self.IsSpaceOccupied(targetPosition): raise Exception("targetPosition position is occupied.")
 		if actor.AP < MOVE_AP_COST: raise Expection("Not enough AP to move.")
 		actor.PerformMove(targetPosition)
 
-	def PerformFire(self, actor, targetPosition):
+	def PerformFire(self, owner, targetPosition):
+		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, targetPosition)
 		if dist > actor.range: raise Exception("targetPosition is out of range.")
 		if actor.AP < FIRE_AP_COST: raise Expection("Not enough AP to Fire.")
@@ -279,16 +281,18 @@ class GameController:
 			self.board.RemoveEntity(targetObject)
 			# TODO: add TankWall if necessary
 
-	def PerformShareActions(self, actor, target, amount):
+	def PerformShareActions(self, owner, target, amount):
+		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, target.position)
 		if dist > actor.range: raise Exception("target is out of range.")
-		cost = DetermineShareCost(amount)
+		cost = _DetermineShareCost(amount)
 		if actor.AP < (amount + cost): raise Exception("Not enough AP to Share.")
 		# TODO: check if player has done share today
 		actor.AP -= (amount + cost)
 		target.GainAP(amount)
 
-	def PerformShareLife(self, actor, target):
+	def PerformShareLife(self, owner, target):
+		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, target.position)
 		if dist > actor.range: raise Exception("target is out of range.")
 		# TODO: check if player has done share today
@@ -296,22 +300,30 @@ class GameController:
 		# TODO: check if player is dead now
 		if target.lives != 3: target.lives += 1
 
-	def PerformTradeGold(self, actor, amount):
+	def PerformTradeGold(self, owner, amount):
+		actor = self._GetTankByOwner(owner)
 		if actor.gold < amount: raise Exception("Not enough gold.")
-		ap_value = DetermineTradeValue(amount)
+		ap_value = _DetermineTradeValue(amount)
 		actor.gold -= amount
 		actor.GainAP(ap_value)
 
-	def PerformUpgrade(self, actor):
+	def PerformUpgrade(self, owner):
+		actor = self._GetTankByOwner(owner)
 		if actor.AP < UPGRADE_AP_COST: raise Exception("Not enough AP to Upgrade.")
 		actor.PerformUpgrade()
 
-	def DetermineTradeValue(amount):
+	def _DetermineTradeValue(amount):
 		if amount % 3 != 0: raise Exception("Must trade gold in multiples of three")
 		return amount // 3
 
-	def DetermineShareCost(amount):
+	def _DetermineShareCost(amount):
 		return 0
+		
+	def _GetTankByOwner(self, owner):
+		for tank in self.tanks:
+			if owner is tank.owner or owner is tank.tile:
+				return tank
+		raise Exception("No tank found with owner name: " + owner)
 
 
 def Distance(posA, posB):
@@ -366,9 +378,9 @@ if __name__ == "__main__":
 	controller.AddTank(Position(0, 5), "Mike")
 	controller.AddTank(Position(0, 3), "Ty")
 
-	print("INITIAL SETUP")
-	PrintTanks(controller)
-	controller.board.Render()
+	#print("INITIAL SETUP")
+	#PrintTanks(controller)
+	#controller.board.Render()
 
 	controller.StartOfTurn()
 	print("START OF DAY 1")
