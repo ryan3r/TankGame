@@ -291,8 +291,8 @@ def Distance(posA, posB):
 	return max(xDiff, yDiff)
 
 
-def PrintTanks(board):
-	for tank in board.tanks:
+def PrintTanks(controller):
+	for tank in controller.tanks:
 		print(tank)
 
 
@@ -338,8 +338,10 @@ if __name__ == "__main__":
 	controller.AddTank(Position(0, 3), "Ty")
 
 	print("INITIAL SETUP")
+	PrintTanks(controller)
 	controller.board.Render()
 
 	controller.StartOfTurn()
 	print("START OF DAY 1")
+	PrintTanks(controller)
 	controller.board.Render()
