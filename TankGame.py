@@ -65,7 +65,7 @@ class Tank:
 		if self.DoesShotHit(actor):
 			self.lives = max(0, self.lives - amount)
 			if self.lives == 0:
-				gained_gold = 3 if self.gold is 0 else self.gold
+				gained_gold = 3 if self.gold == 0 else self.gold
 				gained_kills = 1
 				self._Die()
 				remove_from_board = True
@@ -335,7 +335,12 @@ def Distance(posA, posB):
 def PrintTanks(controller):
 	for tank in controller.tanks:
 		print(tank)
-
+		
+def AlgebraicNotationToPosition(alg_notation):
+	alg_notation = alg_notation.lower()
+	x = ord(alg_notation[0]) - ord('a')
+	y = int(alg_notation[1:]) - 1
+	return Position(x, y)
 
 if __name__ == "__main__":
 	controller = GameController(9, 9)
@@ -386,3 +391,5 @@ if __name__ == "__main__":
 	print("START OF DAY 1")
 	PrintTanks(controller)
 	controller.board.Render()
+	
+	

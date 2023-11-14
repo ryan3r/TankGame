@@ -1,9 +1,21 @@
 import unittest
-from TankGame import Board, Position, Wall, Tank
+from TankGame import Board, Position, Wall, Tank, AlgebraicNotationToPosition
 
 WIDTH = 9
 HEIGHT = 7
 
+class NotationTest(unittest.TestCase):
+	def test_A1_convert(self):
+		position = AlgebraicNotationToPosition("A1")
+		self.assertEqual(position, Position(0, 0))
+
+	def test_C3_convert(self):
+		position = AlgebraicNotationToPosition("C3")
+		self.assertEqual(position, Position(2, 2))
+
+	def test_K11_convert(self):
+		position = AlgebraicNotationToPosition("K11")
+		self.assertEqual(position, Position(10, 10))
 
 class TestBoard(unittest.TestCase):
     def _make_board(self):
