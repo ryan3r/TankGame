@@ -85,7 +85,7 @@ class Wall:
 		self.position = position
 		self.durability = WALL_STARTING_DURABILITY
 
-	def TakeDamage(self, amount):
+	def TakeDamage(self, actor, amount):
 		remove_from_board = False
 		gained_AP = 0
 		gained_gold = 0
@@ -275,17 +275,19 @@ class GameController:
 				self.board.RemoveEntity(targetObject)
 				# TODO: add TankWall if necessary
 
-	def PerformShareActions(self, owner, target, amount):
+	def PerformShareActions(self, owner, targetOwner, amount):
+		target = self._GetTankByOwner(targetOwner)
 		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, target.position)
 		if dist > actor.range: raise Exception("target is out of range.")
-		cost = _DetermineShareCost(amount)
+		cost = self._DetermineShareCost(amount)
 		if actor.AP < (amount + cost): raise Exception("Not enough AP to Share.")
 		# TODO: check if player has done share today
 		actor.AP -= (amount + cost)
 		target.GainAP(amount)
 
-	def PerformShareLife(self, owner, target):
+	def PerformShareLife(self, owner, targetOwner):
+		target = self._GetTankByOwner(targetOwner)
 		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, target.position)
 		if dist > actor.range: raise Exception("target is out of range.")
@@ -297,7 +299,7 @@ class GameController:
 	def PerformTradeGold(self, owner, amount):
 		actor = self._GetTankByOwner(owner)
 		if actor.gold < amount: raise Exception("Not enough gold.")
-		ap_value = _DetermineTradeValue(amount)
+		ap_value = self._DetermineTradeValue(amount)
 		actor.gold -= amount
 		actor.GainAP(ap_value)
 
@@ -306,11 +308,11 @@ class GameController:
 		if actor.AP < UPGRADE_AP_COST: raise Exception("Not enough AP to Upgrade.")
 		actor.PerformUpgrade()
 
-	def _DetermineTradeValue(amount):
+	def _DetermineTradeValue(self, amount):
 		if amount % 3 != 0: raise Exception("Must trade gold in multiples of three")
 		return amount // 3
 
-	def _DetermineShareCost(amount):
+	def _DetermineShareCost(self, amount):
 		return 0
 		
 	def _GetTankByOwner(self, owner):
@@ -377,10 +379,6 @@ if __name__ == "__main__":
 	controller.AddTank(Position(0, 5), "Mike")
 	controller.AddTank(Position(0, 3), "Ty")
 
-	#print("INITIAL SETUP")
-	#PrintTanks(controller)
-	#controller.board.Render()
-
 	controller.StartOfTurn()
 	print("START OF DAY 1")
 	PrintTanks(controller)
@@ -388,52 +386,37 @@ if __name__ == "__main__":
 	print()
 	
 	controller.PerformMove("Corey", AlgebraicNotationToPosition("B7"))
-	PrintTanks(controller)
-	controller.board.Render()
-	print()
-	
 	controller.PerformMove("Dan", AlgebraicNotationToPosition("C8"))
-	PrintTanks(controller)
-	controller.board.Render()
-	print()
-	
 	controller.PerformMove("Dan", AlgebraicNotationToPosition("C7"))
-	PrintTanks(controller)
-	controller.board.Render()
-	print()
-	
 	controller.PerformMove("Ty", AlgebraicNotationToPosition("B4"))
-	PrintTanks(controller)
-	controller.board.Render()
-	print()
-	
 	controller.PerformFire("Ryan", AlgebraicNotationToPosition("B4"), True)
-	PrintTanks(controller)
-	controller.board.Render()
-	print()
-	
 	controller.PerformMove("John", AlgebraicNotationToPosition("G3"))
-	PrintTanks(controller)
-	controller.board.Render()
-	print()
-	
 	controller.PerformMove("Marci", AlgebraicNotationToPosition("I5"))
-	PrintTanks(controller)
-	controller.board.Render()
-	print()
-	
 	controller.PerformMove("DK", AlgebraicNotationToPosition("I7"))
-	PrintTanks(controller)
-	controller.board.Render()
-	print()
-	
 	controller.PerformMove("Ty", AlgebraicNotationToPosition("A5"))
-	PrintTanks(controller)
-	controller.board.Render()
-	print()
-	
 	controller.StartOfTurn()
 	print("START OF DAY 2")
 	PrintTanks(controller)
 	controller.board.Render()
 	print()
+
+	controller.PerformFire("Beyer", AlgebraicNotationToPosition("D3"))
+	controller.PerformFire("Beyer", AlgebraicNotationToPosition("D3"))
+	controller.PerformFire("Dan", AlgebraicNotationToPosition("C6"))
+	controller.PerformFire("Ryan", AlgebraicNotationToPosition("D3"))
+	controller.PerformFire("Mike", AlgebraicNotationToPosition("C6"))
+	controller.PerformFire("Mike", AlgebraicNotationToPosition("C6"))
+	controller.PerformFire("Ty", AlgebraicNotationToPosition("C6"))
+	controller.PerformFire("Corey", AlgebraicNotationToPosition("C6"))
+	controller.PerformShareActions("Corey", "Dan", 1)
+	controller.PerformMove("Dan", AlgebraicNotationToPosition("D6"))
+	controller.PerformMove("DY", AlgebraicNotationToPosition("G8"))
+	controller.PerformMove("DY", AlgebraicNotationToPosition("G7"))
+	controller.PerformFire("John", AlgebraicNotationToPosition("G4"))
+	controller.PerformFire("Taylore", AlgebraicNotationToPosition("D3"))
+	controller.PerformFire("Taylore", AlgebraicNotationToPosition("D3"))
+	controller.PerformFire("DK", AlgebraicNotationToPosition("G6"))
+	PrintTanks(controller)
+	controller.board.Render()
+	print()
+
