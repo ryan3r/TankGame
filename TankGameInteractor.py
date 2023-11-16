@@ -1,4 +1,6 @@
-from TankGame import GameController
+from TankGameController import GameController
+from Entities import Position
+from collections import namedtuple
 
 MOVE_ACTION = "move"
 FIRE_ACTION = "fire"
@@ -31,11 +33,11 @@ class Interactor:
                 self._DoShareAPAction(action)
             elif action_type == SHARE_LIFE_ACTION:
                 self._DoShareLifeAction(action)
-            else
+            else:
                 raise Exception("Unhandled action type: " + action_type)
 
     def _CheckDate(self, action):
-        if self._date is None or self._date is not action.date:
+        if self._date is None or self._date != action.date:
             self._controller.StartOfTurn()
             self._date = action.date
 
@@ -56,6 +58,12 @@ class Interactor:
 
     def _DoShareLifeAction(self, action):
         self._controller.PerformShareLife(action.actor, action.target)
+		
+def AlgebraicNotationToPosition(alg_notation):
+	alg_notation = alg_notation.lower()
+	x = ord(alg_notation[0]) - ord('a')
+	y = int(alg_notation[1:]) - 1
+	return Position(x, y)
 
 Action = namedtuple("Action", ["date", "actor", "action_type", "target", "metadata"])
 
