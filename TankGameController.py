@@ -30,7 +30,9 @@ class GameController:
 		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, targetPosition)
 		if dist > 1: raise Exception("Must only move 1 space at a time.")
-		if self.board.IsSpaceOccupied(targetPosition): raise Exception(f"targetPosition {targetPosition} is occupied.")
+		if self.board.IsSpaceOccupied(targetPosition):
+			self.board.Render()
+			raise Exception(f"targetPosition {targetPosition} is occupied.")
 		if actor.AP < MOVE_AP_COST: raise Expection("Not enough AP to move.")
 		self.board.RemoveEntity(actor)
 		actor.PerformMove(targetPosition)
@@ -39,10 +41,14 @@ class GameController:
 	def PerformFire(self, owner, targetPosition, doesHit=True):
 		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, targetPosition)
-		if dist > actor.range: raise Exception("targetPosition is out of range.")
-		if actor.AP < FIRE_AP_COST: raise Expection("Not enough AP to Fire.")
+		if dist > actor.range:
+			raise Exception("targetPosition is out of range.")
+		if actor.AP < FIRE_AP_COST: 
+			raise Expection("Not enough AP to Fire.")
 		targetObject = self.board.grid[targetPosition.x][targetPosition.y]
-		if not self.board.DoesLineOfSightExist(actor, targetObject): raise Exception("No line of sight on targetPosition.")
+		if not self.board.DoesLineOfSightExist(actor, targetObject):
+			self.board.Render()
+			raise Exception("No line of sight on targetPosition.")
 		
 		actor.PerformFire()
 		if doesHit:

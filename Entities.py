@@ -55,7 +55,7 @@ class Tank:
 	def GainAP(self, amount_to_gain):
 		self.AP = min(AP_MAX, self.AP + amount_to_gain)
 
-	def HasHold(self, amount):
+	def HasGold(self, amount):
 		return self._gold >= amount
 
 	def GainGold(self, amount_to_gain):
