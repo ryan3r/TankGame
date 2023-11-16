@@ -30,7 +30,7 @@ class GameController:
 		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, targetPosition)
 		if dist > 1: raise Exception("Must only move 1 space at a time.")
-		if self.board.IsSpaceOccupied(targetPosition): raise Exception("targetPosition position is occupied.")
+		if self.board.IsSpaceOccupied(targetPosition): raise Exception(f"targetPosition {targetPosition} is occupied.")
 		if actor.AP < MOVE_AP_COST: raise Expection("Not enough AP to move.")
 		self.board.RemoveEntity(actor)
 		actor.PerformMove(targetPosition)

@@ -64,22 +64,6 @@ if __name__ == "__main__":
 	PrintTanks(controller)
 	controller.board.Render()
 	print()
-
-	# controller.StartOfTurn()
-	# print("START OF DAY 1")
-	# PrintTanks(controller)
-	# controller.board.Render()
-	# print()
-	
-	# controller.PerformMove("Corey", AlgebraicNotationToPosition("B7"))
-	# controller.PerformMove("Dan", AlgebraicNotationToPosition("C8"))
-	# controller.PerformMove("Dan", AlgebraicNotationToPosition("C7"))
-	# controller.PerformMove("Ty", AlgebraicNotationToPosition("B4"))
-	# controller.PerformFire("Ryan", AlgebraicNotationToPosition("B4"), True)
-	# controller.PerformMove("John", AlgebraicNotationToPosition("G3"))
-	# controller.PerformMove("Marci", AlgebraicNotationToPosition("I5"))
-	# controller.PerformMove("DK", AlgebraicNotationToPosition("I7"))
-	# controller.PerformMove("Ty", AlgebraicNotationToPosition("A5"))
 	
 	# controller.StartOfTurn()
 	# print("START OF DAY 2")
