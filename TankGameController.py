@@ -75,9 +75,10 @@ class GameController:
 
 	def PerformTradeGold(self, owner, amount):
 		actor = self._GetTankByOwner(owner)
-		if actor.gold < amount: raise Exception("Not enough gold.")
+		if not actor.HasGold(amount):
+			raise Exception("Not enough gold.")
 		ap_value = self._DetermineTradeValue(amount)
-		actor.gold -= amount
+		actor.SpendGold(amount)
 		actor.GainAP(ap_value)
 
 	def PerformUpgrade(self, owner):

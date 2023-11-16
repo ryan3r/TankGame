@@ -30,10 +30,14 @@ class Tank:
 		self.owner = owner
 		self.lives = STARTING_LIVES
 		self.AP = 0
-		self.gold = STARTING_GOLD
+		self._gold = STARTING_GOLD
 		self.range = STARTING_RANGE
 		self.kills = 0
+
+		#Accolade stats
 		self._totalMoves = 0
+		self._totalGold = 0
+
 		self.tile = tile if tile is not None else self.owner[:2]
 
 	def PerformMove(self, targetPos):
@@ -51,6 +55,16 @@ class Tank:
 	def GainAP(self, amount_to_gain):
 		self.AP = min(AP_MAX, self.AP + amount_to_gain)
 
+	def HasHold(self, amount):
+		return self._gold >= amount
+
+	def GainGold(self, amount_to_gain):
+		self._gold += amount_to_gain
+		self._totalGold += amount_to_gain
+
+	def SpendGold(self, amount_to_spend):
+		self._gold -= amount_to_spend
+
 	def TakeDamage(self, actor, amount):
 		remove_from_board = False
 		gained_AP = 0
@@ -60,7 +74,7 @@ class Tank:
 		
 		self.lives = max(0, self.lives - amount)
 		if self.lives == 0:
-			gained_gold = 3 if self.gold == 0 else self.gold
+			gained_gold = 3 if self._gold == 0 else self._gold
 			gained_kills = 1
 			self._Die()
 			remove_from_board = True
@@ -69,7 +83,7 @@ class Tank:
 		
 	def GainAttackDrops(self, drops):
 		self.GainAP(drops.AP)
-		self.gold += drops.gold
+		self._gold += drops.gold
 		self.kills += drops.kills
 		self.lives += drops.lives
 
@@ -77,7 +91,7 @@ class Tank:
 		self.AP = 0
 
 	def __str__(self):
-		return f"{self.owner:15} - {self.position.x:2},{self.position.y:2} Lives: {self.lives} Range: {self.range} AP: {self.AP} Gold: {self.gold:2}"
+		return f"{self.owner:15} - {self.position.x:2},{self.position.y:2} Lives: {self.lives} Range: {self.range} AP: {self.AP} Gold: {self._gold:2} Total Gold: {self._totalGold:3}"
 
 class Wall:
 
@@ -126,7 +140,7 @@ class GoldMine:
 		if not tanksInMine: return
 		awardPerTank = self.goldPerDay // len(tanksInMine)
 		for tank in tanksInMine:
-			tank.gold += awardPerTank
+			tank.GainGold(awardPerTank)
 
 
 class Board:
