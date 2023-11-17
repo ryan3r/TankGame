@@ -54,7 +54,7 @@ class Interactor:
         self._controller.PerformTradeGold(action.actor, int(action.metadata))
 
     def _DoShareAPAction(self, action):
-        self._controller.PerformShareActions(action.actor, action.target, int(metadata))
+        self._controller.PerformShareActions(action.actor, action.target, int(action.metadata))
 
     def _DoShareLifeAction(self, action):
         self._controller.PerformShareLife(action.actor, action.target)

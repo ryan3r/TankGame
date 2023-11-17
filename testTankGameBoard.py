@@ -1,5 +1,6 @@
 import unittest
-from TankGame import Board, Position, Wall, Tank, AlgebraicNotationToPosition
+from Entities import Board, Position, Wall, Tank
+from TankGameInteractor import AlgebraicNotationToPosition
 
 WIDTH = 9
 HEIGHT = 7
