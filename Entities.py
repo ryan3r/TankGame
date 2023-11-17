@@ -83,7 +83,7 @@ class Tank:
 		
 	def GainAttackDrops(self, drops):
 		self.GainAP(drops.AP)
-		self._gold += drops.gold
+		self.GainGold(drops.gold)
 		self.kills += drops.kills
 		self.lives += drops.lives
 

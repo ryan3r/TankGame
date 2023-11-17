@@ -29,7 +29,9 @@ class GameController:
 	def PerformMove(self, owner, targetPosition):
 		actor = self._GetTankByOwner(owner)
 		dist = Distance(actor.position, targetPosition)
-		if dist > 1: raise Exception("Must only move 1 space at a time.")
+		if dist > 1:
+			self.board.Render()
+			raise Exception("Must only move 1 space at a time.")
 		if self.board.IsSpaceOccupied(targetPosition):
 			self.board.Render()
 			raise Exception(f"targetPosition {targetPosition} is occupied.")
