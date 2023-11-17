@@ -8,6 +8,7 @@ STARTING_RANGE = 2
 STARTING_GOLD = 0
 
 WALL_STARTING_DURABILITY = 5
+TANK_WALL_STARTING_DURABILITY = WALL_STARTING_DURABILITY
 
 AP_PER_TURN = 2
 AP_MAX = 9
@@ -115,12 +116,29 @@ class Wall:
 	@property
 	def tile(self):
 		return f"W{self.durability}"
+		
+class TankWall(Wall):
+
+	def __init__(self, position, tank):
+		super().__init__(position)
+		self.durability = TANK_WALL_STARTING_DURABILITY
+		self.tank = tank
+		self.tile = f"{self.tank.tile[:1]}`"
+		
+	def GainLife(self):
+		pass
+		
 
 class Council:
 
 	def __init__(self):
-		self.councilors = []
-		self.senators = []
+		pass
+	
+	def GetCouncilors(self):
+		pass
+		
+	def GetSenators(self):
+		pass
 
 class GoldMine:
 
