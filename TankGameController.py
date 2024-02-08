@@ -2,11 +2,12 @@ from Entities import *
 
 class GameRules:
 	
-	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn):
+	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur):
 		self._fireApCost = fireApCost
 		self._maxAp = maxAp
 		self._startingGold = startingGold
 		self._apPerTurn = apPerTurn
+		self._wallDurability = wallDur
 		
 	def GetFireApCost(self, tank):
 		return self._fireApCost
@@ -19,6 +20,9 @@ class GameRules:
 		
 	def GetApPerTurn(self, tank):
 		return self._apPerTurn
+		
+	def GetDefaultWallDurability(self):
+		return self._wallDurability
 
 class GameController:
 
@@ -30,7 +34,7 @@ class GameController:
 		self.gameRules = game_rules
 
 	def AddWall(self, position):
-		newWall = Wall(position)
+		newWall = Wall(position, self.gameRules.GetDefaultWallDurability())
 		self.board.AddEntity(newWall)
 		self.walls.append(newWall)
 

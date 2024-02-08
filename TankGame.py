@@ -119,7 +119,7 @@ def SetupSeason2():
 	return s2Controller
 	
 def GetSeason2GameRules():
-	return GameRules(startingGold = 0, maxAp = 9, fireApCost = 2, apPerTurn = 2)
+	return GameRules(startingGold = 0, maxAp = 9, fireApCost = 2, apPerTurn = 2, wallDur = 5)
 	
 def SetupSeason3():
 	fourCornersMapBuilder = BuildFourCornersMap()
@@ -147,7 +147,7 @@ def SetupSeason3():
 	return s3Controller
 	
 def GetSeason3GameRules():
-	return GameRules(startingGold = 0, maxAp = 5, fireApCost = 1, apPerTurn = 1)
+	return GameRules(startingGold = 0, maxAp = 5, fireApCost = 1, apPerTurn = 1, wallDur = 3)
 
 if __name__ == "__main__":
 	

@@ -6,9 +6,6 @@ logger = logging.getLogger(__name__)
 STARTING_LIVES = 3
 STARTING_RANGE = 2
 
-WALL_STARTING_DURABILITY = 5
-TANK_WALL_STARTING_DURABILITY = WALL_STARTING_DURABILITY
-
 FIRE_DAMAGE = 1
 
 #AP COSTS
@@ -79,9 +76,9 @@ class Tank:
 
 class Wall:
 
-	def __init__(self, position):
+	def __init__(self, position, durability):
 		self.position = position
-		self.durability = WALL_STARTING_DURABILITY
+		self.durability = durability
 
 	def TakeDamage(self, actor, amount):
 		remove_from_board = False
@@ -98,19 +95,7 @@ class Wall:
 
 	@property
 	def tile(self):
-		return f"W{self.durability}"
-		
-class TankWall(Wall):
-
-	def __init__(self, position, tank):
-		super().__init__(position)
-		self.durability = TANK_WALL_STARTING_DURABILITY
-		self.tank = tank
-		self.tile = f"{self.tank.tile[:1]}`"
-		
-	def GainLife(self):
-		pass
-		
+		return f"W{self.durability}"		
 
 class Council:
 
