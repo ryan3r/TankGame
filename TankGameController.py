@@ -1,12 +1,33 @@
 from Entities import *
 
+class GameRules:
+	
+	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn):
+		self._fireApCost = fireApCost
+		self._maxAp = maxAp
+		self._startingGold = startingGold
+		self._apPerTurn = apPerTurn
+		
+	def GetFireApCost(self, tank):
+		return self._fireApCost
+		
+	def GetMaxAp(self, tank):
+		return self._maxAp
+		
+	def GetStartingGold(self, tank):
+		return self._startingGold
+		
+	def GetApPerTurn(self, tank):
+		return self._apPerTurn
+
 class GameController:
 
-	def __init__(self, width, height):
+	def __init__(self, width, height, game_rules):
 		self.board = Board(width, height)
 		self.walls = []
 		self.tanks = []
 		self.goldMines = []
+		self.gameRules = game_rules
 
 	def AddWall(self, position):
 		newWall = Wall(position)
@@ -15,12 +36,13 @@ class GameController:
 
 	def AddTank(self, position, owner, **tankArgs):
 		newTank = Tank(position, owner, **tankArgs)
+		newTank._gold = self.gameRules.GetStartingGold(newTank)
 		self.board.AddEntity(newTank)
 		self.tanks.append(newTank)
 
 	def StartOfTurn(self):
 		for tank in self.tanks:
-			if tank.lives > 0: tank.GainAP(AP_PER_TURN)
+			if tank.lives > 0: self._GiveTankAp(tank, self.gameRules.GetApPerTurn(tank))
 
 		if not self.goldMines: return
 		for mine in self.goldMines:
@@ -45,17 +67,17 @@ class GameController:
 		dist = Distance(actor.position, targetPosition)
 		if dist > actor.range:
 			raise Exception("targetPosition is out of range.")
-		if actor.AP < FIRE_AP_COST: 
+		if actor.AP < self.gameRules.GetFireApCost(actor): 
 			raise Expection("Not enough AP to Fire.")
 		targetObject = self.board.grid[targetPosition.x][targetPosition.y]
 		if not self.board.DoesLineOfSightExist(actor, targetObject):
 			self.board.Render()
 			raise Exception("No line of sight on targetPosition.")
 		
-		actor.PerformFire()
+		actor.AP -= self.gameRules.GetFireApCost(actor)
 		if doesHit:
 			remove_from_board, attack_drops = targetObject.TakeDamage(actor, FIRE_DAMAGE)
-			actor.GainAttackDrops(attack_drops)
+			self._GiveTankAttackDrops(actor, attack_drops)
 			if remove_from_board:
 				self.board.RemoveEntity(targetObject)
 				# TODO: add TankWall if necessary
@@ -69,7 +91,7 @@ class GameController:
 		if actor.AP < (amount + cost): raise Exception("Not enough AP to Share.")
 		# TODO: check if player has done share today
 		actor.AP -= (amount + cost)
-		target.GainAP(amount)
+		self._GiveTankAp(target, amount)
 
 	def PerformShareLife(self, owner, targetOwner):
 		target = self._GetTankByOwner(targetOwner)
@@ -87,12 +109,21 @@ class GameController:
 			raise Exception("Not enough gold.")
 		ap_value = self._DetermineTradeValue(amount)
 		actor.SpendGold(amount)
-		actor.GainAP(ap_value)
+		self._GiveTankAp(actor, ap_value)
 
 	def PerformUpgrade(self, owner):
 		actor = self._GetTankByOwner(owner)
 		if actor.AP < UPGRADE_AP_COST: raise Exception("Not enough AP to Upgrade.")
 		actor.PerformUpgrade()
+		
+	def _GiveTankAttackDrops(self, tank, attackDrops):
+		self._GiveTankAp(tank, attackDrops.AP)
+		tank.GainGold(attackDrops.gold)
+		tank.kills += attackDrops.kills
+		tank.lives += attackDrops.lives
+		
+	def _GiveTankAp(self, tank, amount):
+		tank.AP = min(self.gameRules.GetMaxAp(tank), tank.AP + amount)
 
 	def _DetermineTradeValue(self, amount):
 		if amount % 3 != 0: raise Exception("Must trade gold in multiples of three")

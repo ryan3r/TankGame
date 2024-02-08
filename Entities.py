@@ -5,19 +5,14 @@ logger = logging.getLogger(__name__)
 
 STARTING_LIVES = 3
 STARTING_RANGE = 2
-STARTING_GOLD = 0
 
 WALL_STARTING_DURABILITY = 5
 TANK_WALL_STARTING_DURABILITY = WALL_STARTING_DURABILITY
-
-AP_PER_TURN = 2
-AP_MAX = 9
 
 FIRE_DAMAGE = 1
 
 #AP COSTS
 MOVE_AP_COST = 1
-FIRE_AP_COST = 2
 UPGRADE_AP_COST = 5
 
 Position = namedtuple("Position", ["x", "y"])
@@ -31,7 +26,7 @@ class Tank:
 		self.owner = owner
 		self.lives = STARTING_LIVES
 		self.AP = 0
-		self._gold = STARTING_GOLD
+		self._gold = 0
 		self.range = STARTING_RANGE
 		self.kills = 0
 
@@ -46,15 +41,9 @@ class Tank:
 		self.position = targetPos
 		self._totalMoves += 1
 
-	def PerformFire(self):
-		self.AP -= FIRE_AP_COST
-
 	def PerformUpgrade(self):
 		self.AP -= UPGRADE_AP_COST
 		self.range += 1
-		
-	def GainAP(self, amount_to_gain):
-		self.AP = min(AP_MAX, self.AP + amount_to_gain)
 
 	def HasGold(self, amount):
 		return self._gold >= amount
@@ -81,12 +70,6 @@ class Tank:
 			remove_from_board = True
 			
 		return remove_from_board, AttackDrops(AP = gained_AP, gold = gained_gold, kills = gained_kills, lives = gained_lives)
-		
-	def GainAttackDrops(self, drops):
-		self.GainAP(drops.AP)
-		self.GainGold(drops.gold)
-		self.kills += drops.kills
-		self.lives += drops.lives
 
 	def _Die(self):
 		self.AP = 0
