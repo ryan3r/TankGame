@@ -57,7 +57,7 @@ class TestBoard(unittest.TestCase):
             Tank(Position(2, 2), "T2"),
             Tank(Position(0, 2), "T3"),
             Tank(Position(2, 0), "T4"),
-            Wall(Position(3, 3))
+            Wall(Position(3, 3), 5)
         ]
 
         # X axis
@@ -81,11 +81,11 @@ class TestBoard(unittest.TestCase):
             Tank(Position(2, 2), "T2"),
             Tank(Position(0, 2), "T3"),
             Tank(Position(2, 0), "T4"),
-            Wall(Position(1, 1)),
-            Wall(Position(0, 1)),
-            Wall(Position(1, 0)),
-            Wall(Position(2, 1)),
-            Wall(Position(1, 2)),
+            Wall(Position(1, 1), 5),
+            Wall(Position(0, 1), 5),
+            Wall(Position(1, 0), 5),
+            Wall(Position(2, 1), 5),
+            Wall(Position(1, 2), 5),
         ]
 
         # X axis
@@ -131,9 +131,9 @@ class TestBoard(unittest.TestCase):
             Tank(Position(0, 0), "T1"),
             Tank(Position(1, 1), "T2"),
             Tank(Position(2, 0), "T3"),
-            Wall(Position(1, 0)),
-            Wall(Position(0, 1)),
-            Wall(Position(2, 1)),
+            Wall(Position(1, 0), 5),
+            Wall(Position(0, 1), 5),
+            Wall(Position(2, 1), 5),
         ]
 
         self._check_line_of_sight(0, 1, True) # T1 can't see T2
@@ -145,7 +145,7 @@ class TestBoard(unittest.TestCase):
         """
         self.entities = [
             Tank(Position(0, 0), "T1"),
-            Wall(Position(1, 0)),
+            Wall(Position(1, 0), 5),
             Tank(Position(2, 0), "T2"),
         ]
 
