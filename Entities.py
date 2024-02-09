@@ -10,7 +10,6 @@ FIRE_DAMAGE = 1
 
 #AP COSTS
 MOVE_AP_COST = 1
-UPGRADE_AP_COST = 5
 
 Position = namedtuple("Position", ["x", "y"])
 AttackDrops = namedtuple("AttackDrops", ["AP", "gold", "kills", "lives"])
@@ -32,15 +31,26 @@ class Tank:
 		self._totalGold = 0
 
 		self.tile = tile if tile is not None else self.owner[:2]
+		
+	def HasAp(self, amount = 1):
+		return self.AP >= amount
+		
+	def SpendAp(self, amount = 1):
+		self.AP -= amount
+		
+	def GainAp(self, amount = 1):
+		self.AP += amount
 
 	def PerformMove(self, targetPos):
 		self.AP -= MOVE_AP_COST
 		self.position = targetPos
 		self._totalMoves += 1
-
-	def PerformUpgrade(self):
-		self.AP -= UPGRADE_AP_COST
-		self.range += 1
+		
+	def IncreaseRange(self, amount = 1):
+		self.range += amount
+		
+	def GetRange(self):
+		return self.range
 
 	def HasGold(self, amount):
 		return self._gold >= amount

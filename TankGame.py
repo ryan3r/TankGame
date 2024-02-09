@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from TankGameInteractor import Interactor
 from CsvActionSource import CsvActionSource
 from Entities import Position, GoldMine
-from TankGameController import GameController, GameRules
+from TankGameController import *
 
 CSV_PATH = "game2.csv"
 
@@ -119,7 +119,8 @@ def SetupSeason2():
 	return s2Controller
 	
 def GetSeason2GameRules():
-	return GameRules(startingGold = 0, maxAp = 9, fireApCost = 2, apPerTurn = 2, wallDur = 5)
+	rip = ApCostRangeIncreasePolicy(ap_cost = 5)
+	return GameRules(startingGold = 0, maxAp = 9, fireApCost = 2, apPerTurn = 2, wallDur = 5, rangeIncreasePolicy = rip)
 	
 def SetupSeason3():
 	fourCornersMapBuilder = BuildFourCornersMap()
@@ -147,7 +148,8 @@ def SetupSeason3():
 	return s3Controller
 	
 def GetSeason3GameRules():
-	return GameRules(startingGold = 0, maxAp = 5, fireApCost = 1, apPerTurn = 1, wallDur = 3)
+	rip = GoldCostRangeIncreasePolicy(gold_cost = 8)
+	return GameRules(startingGold = 0, maxAp = 5, fireApCost = 1, apPerTurn = 1, wallDur = 3, rangeIncreasePolicy = rip)
 
 if __name__ == "__main__":
 	

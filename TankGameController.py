@@ -1,13 +1,49 @@
+from abc import ABC, abstractmethod
 from Entities import *
+
+class RangeIncreasePolicy(ABC):
+	
+	@abstractmethod
+	def CanIncreaseRange(self, tank):
+		pass
+	
+	@abstractmethod
+	def PerformRangeIncrease(self, tank):
+		pass
+		
+class ApCostRangeIncreasePolicy(RangeIncreasePolicy):
+	
+	def __init__(self, ap_cost):
+		self.cost = ap_cost
+		
+	def CanIncreaseRange(self, tank):
+		return tank.HasAp(self.cost)
+		
+	def PerformRangeIncrease(self, tank):
+		tank.SpendAp(self.cost)
+		tank.IncreaseRange()
+		
+class GoldCostRangeIncreasePolicy(RangeIncreasePolicy):
+	
+	def __init__(self, gold_cost):
+		self.cost = gold_cost
+		
+	def CanIncreaseRange(self, tank):
+		return tank.HasGold(self.cost)
+		
+	def PerformRangeIncrease(self, tank):
+		tank.SpendGold(self.cost)
+		tank.IncreaseRange()
 
 class GameRules:
 	
-	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur):
+	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy):
 		self._fireApCost = fireApCost
 		self._maxAp = maxAp
 		self._startingGold = startingGold
 		self._apPerTurn = apPerTurn
 		self._wallDurability = wallDur
+		self.rangeIncreasePolicy = rangeIncreasePolicy
 		
 	def GetFireApCost(self, tank):
 		return self._fireApCost
@@ -117,8 +153,8 @@ class GameController:
 
 	def PerformUpgrade(self, owner):
 		actor = self._GetTankByOwner(owner)
-		if actor.AP < UPGRADE_AP_COST: raise Exception("Not enough AP to Upgrade.")
-		actor.PerformUpgrade()
+		if not self.gameRules.rangeIncreasePolicy.CanIncreaseRange(actor): raise Exception("Cannot increase range.")
+		self.gameRules.rangeIncreasePolicy.PerformRangeIncrease(actor)
 		
 	def _GiveTankAttackDrops(self, tank, attackDrops):
 		self._GiveTankAp(tank, attackDrops.AP)
