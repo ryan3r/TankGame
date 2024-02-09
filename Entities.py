@@ -6,11 +6,6 @@ logger = logging.getLogger(__name__)
 STARTING_LIVES = 3
 STARTING_RANGE = 2
 
-FIRE_DAMAGE = 1
-
-#AP COSTS
-MOVE_AP_COST = 1
-
 Position = namedtuple("Position", ["x", "y"])
 AttackDrops = namedtuple("AttackDrops", ["AP", "gold", "kills", "lives"])
 
@@ -40,11 +35,6 @@ class Tank:
 		
 	def GainAp(self, amount = 1):
 		self.AP += amount
-
-	def PerformMove(self, targetPos):
-		self.AP -= MOVE_AP_COST
-		self.position = targetPos
-		self._totalMoves += 1
 		
 	def IncreaseRange(self, amount = 1):
 		self.range += amount

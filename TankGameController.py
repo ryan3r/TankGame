@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from Entities import *
 
+FIRE_DAMAGE = 1
+
 class RangeIncreasePolicy(ABC):
 	
 	@abstractmethod
@@ -34,16 +36,48 @@ class GoldCostRangeIncreasePolicy(RangeIncreasePolicy):
 	def PerformRangeIncrease(self, tank):
 		tank.SpendGold(self.cost)
 		tank.IncreaseRange()
+		
+class MoveRule(ABC):
+	
+	@abstractmethod
+	def CanMove(self, board, tank, target):
+		pass
+	
+	@abstractmethod
+	def PerformMove(self, board, tank, target):
+		pass
+		
+class ApCostMoveRule(MoveRule):
 
+	def __init__(self, ap_cost):
+		self.cost = ap_cost
+		
+	def CanMove(self, board, tank, target):
+		dist = Distance(tank.position, target)
+		if dist > 1:
+			board.Render()
+			raise Exception("Must only move 1 space at a time.")
+		if board.IsSpaceOccupied(target):
+			board.Render()
+			raise Exception(f"targetPosition {target} is occupied.")
+		if not tank.HasAp(self.cost): raise Expection("Not enough AP to move.")
+		return True
+	
+	def PerformMove(self, board, tank, target):
+		board.RemoveEntity(tank)
+		tank.position = target
+		board.AddEntity(tank)
+		
 class GameRules:
 	
-	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy):
+	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy, moveRule):
 		self._fireApCost = fireApCost
 		self._maxAp = maxAp
 		self._startingGold = startingGold
 		self._apPerTurn = apPerTurn
 		self._wallDurability = wallDur
 		self.rangeIncreasePolicy = rangeIncreasePolicy
+		self.moveRule = moveRule
 		
 	def GetFireApCost(self, tank):
 		return self._fireApCost
@@ -90,17 +124,11 @@ class GameController:
 
 	def PerformMove(self, owner, targetPosition):
 		actor = self._GetTankByOwner(owner)
-		dist = Distance(actor.position, targetPosition)
-		if dist > 1:
-			self.board.Render()
-			raise Exception("Must only move 1 space at a time.")
-		if self.board.IsSpaceOccupied(targetPosition):
-			self.board.Render()
-			raise Exception(f"targetPosition {targetPosition} is occupied.")
-		if actor.AP < MOVE_AP_COST: raise Expection("Not enough AP to move.")
-		self.board.RemoveEntity(actor)
-		actor.PerformMove(targetPosition)
-		self.board.AddEntity(actor)
+		try:
+			self.gameRules.moveRule.CanMove(self.board, actor, targetPosition)
+			self.gameRules.moveRule.PerformMove(self.board, actor, targetPosition)
+		except Exception as e:
+			print("An error ocurred: ", e)
 
 	def PerformFire(self, owner, targetPosition, doesHit=True):
 		actor = self._GetTankByOwner(owner)

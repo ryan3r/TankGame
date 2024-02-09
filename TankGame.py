@@ -120,7 +120,8 @@ def SetupSeason2():
 	
 def GetSeason2GameRules():
 	rip = ApCostRangeIncreasePolicy(ap_cost = 5)
-	return GameRules(startingGold = 0, maxAp = 9, fireApCost = 2, apPerTurn = 2, wallDur = 5, rangeIncreasePolicy = rip)
+	mvRule = ApCostMoveRule(ap_cost = 1)
+	return GameRules(startingGold = 0, maxAp = 9, fireApCost = 2, apPerTurn = 2, wallDur = 5, rangeIncreasePolicy = rip, moveRule = mvRule)
 	
 def SetupSeason3():
 	fourCornersMapBuilder = BuildFourCornersMap()
@@ -149,7 +150,8 @@ def SetupSeason3():
 	
 def GetSeason3GameRules():
 	rip = GoldCostRangeIncreasePolicy(gold_cost = 8)
-	return GameRules(startingGold = 0, maxAp = 5, fireApCost = 1, apPerTurn = 1, wallDur = 3, rangeIncreasePolicy = rip)
+	mvRule = ApCostMoveRule(ap_cost = 1)
+	return GameRules(startingGold = 0, maxAp = 5, fireApCost = 1, apPerTurn = 1, wallDur = 3, rangeIncreasePolicy = rip, moveRule = mvRule)
 
 if __name__ == "__main__":
 	
