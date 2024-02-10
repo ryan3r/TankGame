@@ -203,9 +203,61 @@ class NoGiveLifeRule(GiveApRule):
 	def OnStartOfDay(self):
 		return
 
+class TradeGoldRule(ABC):
+
+	@abstractmethod
+	def CanTradeGold(self, actor, amount):
+		pass
+		
+	@abstractmethod
+	def PerformTradeGold(self, actor, amount):
+		pass
+		
+class FlatRateTradeGoldRule(ABC):
+	
+	def __init__(self, goldPerAp):
+		self.goldPerAp = goldPerAp
+		
+	def CanTradeGold(self, actor, amount):
+		try:
+			apValue = self._DetermineTradeValue(amount)
+			return actor.HasGold(amount)
+		except:
+			return False
+			
+	def PerformTradeGold(self, actor, amount):
+		apValue = self._DetermineTradeValue(amount)
+		actor.SpendGold(amount)
+		actor.GainAp(apValue)
+	
+	def _DetermineTradeValue(self, amount):
+		if amount % self.goldPerAp != 0: raise Exception(f'Must trade gold in multiples of {self.goldPerAp}')
+		return amount // self.goldPerAp
+		
+class TableRateTradeGoldRule(ABC):
+	
+	def __init__(self, tradeTable):
+		self.tradeTable = tradeTable
+		
+	def CanTradeGold(self, actor, amount):
+		try:
+			apValue = self._DetermineTradeValue(amount)
+			return actor.HasGold(amount)
+		except:
+			return False
+			
+	def PerformTradeGold(self, actor, amount):
+		apValue = self._DetermineTradeValue(amount)
+		actor.SpendGold(amount)
+		actor.GainAp(apValue)
+	
+	def _DetermineTradeValue(self, amount):
+		if amount not in self.tradeTable: raise Exception(f'Trade amount {amount} is not in trade table keys: {self.tradeTable.keys()}')
+		return self.tradeTable[amount]
+
 class GameRules:
 	
-	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy, moveRule, goldTransferRule, giveApRule, giveLifeRule):
+	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy, moveRule, goldTransferRule, giveApRule, giveLifeRule, tradeGoldRule):
 		self._fireApCost = fireApCost
 		self._maxAp = maxAp
 		self._startingGold = startingGold
@@ -216,6 +268,7 @@ class GameRules:
 		self.goldTransferRule = goldTransferRule
 		self.giveApRule = giveApRule
 		self.giveLifeRule = giveLifeRule
+		self.tradeGoldRule = tradeGoldRule
 		
 	def OnStartOfDay(self):
 		self.giveApRule.OnStartOfDay()
@@ -310,11 +363,8 @@ class GameController:
 
 	def PerformTradeGold(self, owner, amount):
 		actor = self._GetTankByOwner(owner)
-		if not actor.HasGold(amount):
-			raise Exception("Not enough gold.")
-		ap_value = self._DetermineTradeValue(amount)
-		actor.SpendGold(amount)
-		actor.GainAp(ap_value)
+		if self.gameRules.tradeGoldRule.CanTradeGold(actor, amount):
+			self.gameRules.tradeGoldRule.PerformTradeGold(actor, amount)
 
 	def PerformUpgrade(self, owner):
 		actor = self._GetTankByOwner(owner)
@@ -332,10 +382,6 @@ class GameController:
 		tank.GainGold(attackDrops.gold)
 		tank.kills += attackDrops.kills
 		tank.lives += attackDrops.lives
-
-	def _DetermineTradeValue(self, amount):
-		if amount % 3 != 0: raise Exception("Must trade gold in multiples of three")
-		return amount // 3
 		
 	def _GetTankByOwner(self, owner):
 		for tank in self.tanks:

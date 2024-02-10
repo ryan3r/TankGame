@@ -131,7 +131,8 @@ def GetSeason2GameRules():
 					 moveRule = mvRule, 
 					 goldTransferRule = NoGoldTransferRule(),
 					 giveApRule = OncePerDayGiveApRule(shareActions_sharedList),
-					 giveLifeRule = OncePerDayGiveLifeRule(shareActions_sharedList))
+					 giveLifeRule = OncePerDayGiveLifeRule(shareActions_sharedList),
+					 tradeGoldRule = FlatRateTradeGoldRule(3))
 	
 def SetupSeason3():
 	fourCornersMapBuilder = BuildFourCornersMap()
@@ -171,7 +172,8 @@ def GetSeason3GameRules():
 					 moveRule = mvRule, 
 					 goldTransferRule = TaxedGoldTransferRule(1, None),
 					 giveApRule = NoGiveApRule(),
-					 giveLifeRule = NoGiveLifeRule())
+					 giveLifeRule = NoGiveLifeRule(),
+					 tradeGoldRule = TableRateTradeGoldRule({3:1, 5:2, 10:4}))
 
 if __name__ == "__main__":
 	
