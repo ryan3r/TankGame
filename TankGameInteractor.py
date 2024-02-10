@@ -8,6 +8,7 @@ UPGRADE_ACTION = "upgrade"
 TRADE_ACTION = "trade"
 SHARE_AP_ACTION = "share_ap"
 SHARE_LIFE_ACTION = "share_life"
+TRANSFER_GOLD_ACTION = "transfer_gold"
 
 class Interactor:
 
@@ -33,6 +34,8 @@ class Interactor:
                 self._DoShareAPAction(action)
             elif action_type == SHARE_LIFE_ACTION:
                 self._DoShareLifeAction(action)
+			elif action_type == TRANSFER_GOLD_ACTION:
+				self._DoTransferGold(action)
             else:
                 raise Exception("Unhandled action type: " + action_type)
 
@@ -58,6 +61,9 @@ class Interactor:
 
     def _DoShareLifeAction(self, action):
         self._controller.PerformShareLife(action.actor, action.target)
+		
+	def _DoTransferGold(self, action):
+		self._controller.PerformTransferGold(action.actor, action.target, action.metadata)
 		
 def AlgebraicNotationToPosition(alg_notation):
 	alg_notation = alg_notation.lower()

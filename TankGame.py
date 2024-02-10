@@ -70,13 +70,13 @@ class BuildFourCornersMap(MapBuilder):
 		return (self.x, self.y)
 		
 	def BuildMap(self, fourCornersController):		
-		mine1 = GoldMine()
+		mine1 = ExpandingGoldMine()
 		mine1.AddSpace(Position(1, 5))
-		mine2 = GoldMine()
+		mine2 = ExpandingGoldMine()
 		mine2.AddSpace(Position(5, 1))
-		mine3 = GoldMine()
+		mine3 = ExpandingGoldMine()
 		mine3.AddSpace(Position(9, 5))
-		mine4 = GoldMine()
+		mine4 = ExpandingGoldMine()
 		mine4.AddSpace(Position(5, 9))
 		fourCornersController.goldMines.append(mine1)
 		fourCornersController.goldMines.append(mine2)
@@ -121,12 +121,20 @@ def SetupSeason2():
 def GetSeason2GameRules():
 	rip = ApCostRangeIncreasePolicy(ap_cost = 5)
 	mvRule = ApCostMoveRule(ap_cost = 1)
-	return GameRules(startingGold = 0, maxAp = 9, fireApCost = 2, apPerTurn = 2, wallDur = 5, rangeIncreasePolicy = rip, moveRule = mvRule)
+	return GameRules(startingGold = 0, 
+					 maxAp = 9, 
+					 fireApCost = 2, 
+					 apPerTurn = 2, 
+					 wallDur = 5, 
+					 rangeIncreasePolicy = rip, 
+					 moveRule = mvRule, 
+					 goldTransferRule = NoGoldTransferRule())
 	
 def SetupSeason3():
 	fourCornersMapBuilder = BuildFourCornersMap()
 	size = fourCornersMapBuilder.GetMapSize()
 	s3Controller = GameController(size[0], size[1], GetSeason3GameRules())
+	s3Controller.gameRules.goldTransferRule.council_ref = s3Controller.council
 	
 	fourCornersMapBuilder.BuildMap(s3Controller)
 	s3Controller.AddTank(Position(0, 0), 	"Schmude")
@@ -151,7 +159,14 @@ def SetupSeason3():
 def GetSeason3GameRules():
 	rip = GoldCostRangeIncreasePolicy(gold_cost = 8)
 	mvRule = ApCostMoveRule(ap_cost = 1)
-	return GameRules(startingGold = 0, maxAp = 5, fireApCost = 1, apPerTurn = 1, wallDur = 3, rangeIncreasePolicy = rip, moveRule = mvRule)
+	return GameRules(startingGold = 0, 
+					 maxAp = 5, 
+					 fireApCost = 1, 
+					 apPerTurn = 1, 
+					 wallDur = 3, 
+					 rangeIncreasePolicy = rip, 
+					 moveRule = mvRule, 
+					 goldTransferRule = TaxedGoldTransferRule(1, None))
 
 if __name__ == "__main__":
 	

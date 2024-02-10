@@ -68,9 +68,46 @@ class ApCostMoveRule(MoveRule):
 		tank.position = target
 		board.AddEntity(tank)
 		
+class TransferGoldRule(ABC):
+	
+	@abstractmethod
+	def CanTransferGold(self, actor, target, amount):
+		pass
+		
+	@abstractmethod
+	def PerformTransferGold(self, actor, target, amount):
+		pass
+		
+class TaxedGoldTransferRule(TransferGoldRule):
+
+	def __init__(self, tax_amt, council):
+		self.tax = tax_amt
+		self.council_ref = council
+		
+	def CanTransferGold(self, actor, target, amount):
+		dist = Distance(actor.position, target.position)
+		if dist > actor.GetRange(): return False
+		return actor.HasGold(amount + self.tax)
+		
+	def PerformTransferGold(self, actor, target, amount):
+		actor.SpendGold(amount + self.tax)
+		target.GainGold(amount)
+		self.council_ref.coffer += self.tax
+		
+class NoGoldTransferRule(TransferGoldRule):
+
+	def __init__(self):
+		return
+		
+	def CanTransferGold(self, actor, target, amount):
+		return False
+		
+	def PerformTransferGold(self, actor, target, amount):
+		raise Exception("Rules forbid Gold Transfer")
+
 class GameRules:
 	
-	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy, moveRule):
+	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy, moveRule, goldTransferRule):
 		self._fireApCost = fireApCost
 		self._maxAp = maxAp
 		self._startingGold = startingGold
@@ -78,6 +115,7 @@ class GameRules:
 		self._wallDurability = wallDur
 		self.rangeIncreasePolicy = rangeIncreasePolicy
 		self.moveRule = moveRule
+		self.goldTransferRule = goldTransferRule
 		
 	def GetFireApCost(self, tank):
 		return self._fireApCost
@@ -102,6 +140,7 @@ class GameController:
 		self.tanks = []
 		self.goldMines = []
 		self.gameRules = game_rules
+		self.council = Council()
 
 	def AddWall(self, position):
 		newWall = Wall(position, self.gameRules.GetDefaultWallDurability())
@@ -120,7 +159,7 @@ class GameController:
 
 		if not self.goldMines: return
 		for mine in self.goldMines:
-			mine.AwardGold(self.tanks)
+			mine.AwardGold(self.tanks, self.council)
 
 	def PerformMove(self, owner, targetPosition):
 		actor = self._GetTankByOwner(owner)
@@ -183,6 +222,12 @@ class GameController:
 		actor = self._GetTankByOwner(owner)
 		if not self.gameRules.rangeIncreasePolicy.CanIncreaseRange(actor): raise Exception("Cannot increase range.")
 		self.gameRules.rangeIncreasePolicy.PerformRangeIncrease(actor)
+		
+	def PerformTransferGold(self, owner, targetOwner, amount):
+		actor = self._GetTankByOwner(owner)
+		target = self._GetTankByOwner(targetOwner)
+		if self.gameRules.goldTransferRule.CanTransferGold(actor, target, amount):
+			self.gameRules.goldTransferRule.PerformTransferGold(actor, target, amount)
 		
 	def _GiveTankAttackDrops(self, tank, attackDrops):
 		self._GiveTankAp(tank, attackDrops.AP)

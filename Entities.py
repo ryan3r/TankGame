@@ -9,7 +9,6 @@ STARTING_RANGE = 2
 Position = namedtuple("Position", ["x", "y"])
 AttackDrops = namedtuple("AttackDrops", ["AP", "gold", "kills", "lives"])
 
-
 class Tank:
 
 	def __init__(self, position, owner, tile=None):
@@ -100,13 +99,9 @@ class Wall:
 class Council:
 
 	def __init__(self):
-		pass
-	
-	def GetCouncilors(self):
-		pass
-		
-	def GetSenators(self):
-		pass
+		self.coffer = 0
+		self.councilors = []
+		self.senators = []
 
 class GoldMine:
 
@@ -117,7 +112,7 @@ class GoldMine:
 	def AddSpace(self, position):
 		self.spaces.append(position)
 
-	def AwardGold(self, tanksList):
+	def AwardGold(self, tanksList, council):
 		tanksInMine = []
 		for tank in tanksList:
 			for space in self.spaces:
@@ -127,6 +122,31 @@ class GoldMine:
 		awardPerTank = self.goldPerDay // len(tanksInMine)
 		for tank in tanksInMine:
 			tank.GainGold(awardPerTank)
+			
+class ExpandingGoldMine:
+
+	def __init__(self):
+		self.spaces = []
+		self.goldPerDay = 0
+		
+	def AddSpace(self, position):
+		self.spaces.append(position)
+		self.goldPerDay += 1
+		
+	def AwardGold(self, tanksList, council):
+		tanksInMine = []
+		for tank in tanksList:
+			for space in self.spaces:
+				if tank.position.x == space.x and tank.position.y == space.y: tanksInMine.append(tank)
+
+		if not tanksInMine:
+			council.coffer += self.goldPerDay
+		else:
+			awardPerTank = self.goldPerDay // len(tanksInMine)
+			remainder = self.goldPerDay % len(tanksInMine)
+			for tank in tanksInMine:
+				tank.GainGold(awardPerTank)
+			council.coffer += remainder
 
 
 class Board:
