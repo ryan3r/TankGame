@@ -184,6 +184,7 @@ class OncePerDayGiveLifeRule(GiveLifeRule):
 	def PerformGiveLife(self, actor, target, amount):
 		self.actorList.append(actor)
 		actor.LoseLife()
+		#TODO: handle a player giving their last life
 		target.GainLife()
 		
 	def OnStartOfDay(self):
