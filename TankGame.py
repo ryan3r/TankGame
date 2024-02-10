@@ -128,7 +128,8 @@ def GetSeason2GameRules():
 					 wallDur = 5, 
 					 rangeIncreasePolicy = rip, 
 					 moveRule = mvRule, 
-					 goldTransferRule = NoGoldTransferRule())
+					 goldTransferRule = NoGoldTransferRule(),
+					 giveApRule = OncePerDayGiveApRule())
 	
 def SetupSeason3():
 	fourCornersMapBuilder = BuildFourCornersMap()
@@ -166,7 +167,8 @@ def GetSeason3GameRules():
 					 wallDur = 3, 
 					 rangeIncreasePolicy = rip, 
 					 moveRule = mvRule, 
-					 goldTransferRule = TaxedGoldTransferRule(1, None))
+					 goldTransferRule = TaxedGoldTransferRule(1, None),
+					 giveApRule = NoGiveApRule())
 
 if __name__ == "__main__":
 	

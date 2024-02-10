@@ -16,6 +16,7 @@ class Tank:
 		self.owner = owner
 		self.lives = STARTING_LIVES
 		self.AP = 0
+		self.maxAp = 0
 		self._gold = 0
 		self.range = STARTING_RANGE
 		self.kills = 0
@@ -30,10 +31,10 @@ class Tank:
 		return self.AP >= amount
 		
 	def SpendAp(self, amount = 1):
-		self.AP -= amount
+		self.AP = max(0, self.AP - amount)
 		
 	def GainAp(self, amount = 1):
-		self.AP += amount
+		self.AP = min(self.maxAp, self.AP + amount)
 		
 	def IncreaseRange(self, amount = 1):
 		self.range += amount

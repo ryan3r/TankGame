@@ -105,9 +105,58 @@ class NoGoldTransferRule(TransferGoldRule):
 	def PerformTransferGold(self, actor, target, amount):
 		raise Exception("Rules forbid Gold Transfer")
 
+class GiveApRule(ABC):
+	
+	@abstractmethod
+	def CanGiveAp(self, actor, target, amount):
+		pass
+		
+	@abstractmethod
+	def PerformGiveAp(self, actor, target, amount):
+		pass
+		
+	@abstractmethod
+	def OnStartOfDay(self):
+		pass
+		
+class OncePerDayGiveApRule(GiveApRule):
+
+	def __init__(self):
+		self.OnStartOfDay()
+	
+	def CanGiveAp(self, actor, target, amount):
+		if amount is not 1: raise Exception("May only give one AP per day")
+		if actor in self.actorList: return False
+		if not actor.HasAp(): return False
+		dist = Distance(actor.position, target.position)
+		if dist > actor.range: return False
+		return True
+		
+	def PerformGiveAp(self, actor, target, amount):
+		self.actorList.append(actor)
+		actor.SpendAp(1)
+		target.GainAp(1)
+		
+	def OnStartOfDay(self):
+		self.actorList = []
+		
+class NoGiveApRule(GiveApRule):
+
+	def __init__(self):
+		return
+	
+	def CanGiveAp(self, actor, target, amount):
+		return False
+		
+	def PerformGiveAp(self, actor, target, amount):
+		raise Exception("The rules forbid giving AP")
+		
+	def OnStartOfDay(self):
+		return
+
 class GameRules:
 	
-	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy, moveRule, goldTransferRule):
+	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy, moveRule, goldTransferRule, giveApRule):
 		self._fireApCost = fireApCost
 		self._maxAp = maxAp
 		self._startingGold = startingGold
@@ -116,6 +165,10 @@ class GameRules:
 		self.rangeIncreasePolicy = rangeIncreasePolicy
 		self.moveRule = moveRule
 		self.goldTransferRule = goldTransferRule
+		self.giveApRule = giveApRule
+		
+	def OnStartOfDay(self):
+		self.giveApRule.OnStartOfDay()
 		
 	def GetFireApCost(self, tank):
 		return self._fireApCost
@@ -150,12 +203,15 @@ class GameController:
 	def AddTank(self, position, owner, **tankArgs):
 		newTank = Tank(position, owner, **tankArgs)
 		newTank._gold = self.gameRules.GetStartingGold(newTank)
+		newTank.maxAp = self.gameRules.GetMaxAp(newTank)
 		self.board.AddEntity(newTank)
 		self.tanks.append(newTank)
 
 	def StartOfTurn(self):
+		self.gameRules.OnStartOfDay()
+		
 		for tank in self.tanks:
-			if tank.lives > 0: self._GiveTankAp(tank, self.gameRules.GetApPerTurn(tank))
+			if tank.lives > 0: tank.GainAp(self.gameRules.GetApPerTurn(tank))
 
 		if not self.goldMines: return
 		for mine in self.goldMines:
@@ -192,13 +248,8 @@ class GameController:
 	def PerformShareActions(self, owner, targetOwner, amount):
 		target = self._GetTankByOwner(targetOwner)
 		actor = self._GetTankByOwner(owner)
-		dist = Distance(actor.position, target.position)
-		if dist > actor.range: raise Exception("target is out of range.")
-		cost = self._DetermineShareCost(amount)
-		if actor.AP < (amount + cost): raise Exception("Not enough AP to Share.")
-		# TODO: check if player has done share today
-		actor.AP -= (amount + cost)
-		self._GiveTankAp(target, amount)
+		if self.gameRules.giveApRule.CanGiveAp(actor, target, amount):
+			self.gameRules.giveApRule.PerformGiveAp(actor, target, amount)
 
 	def PerformShareLife(self, owner, targetOwner):
 		target = self._GetTankByOwner(targetOwner)
@@ -216,7 +267,7 @@ class GameController:
 			raise Exception("Not enough gold.")
 		ap_value = self._DetermineTradeValue(amount)
 		actor.SpendGold(amount)
-		self._GiveTankAp(actor, ap_value)
+		actor.GainAp(ap_value)
 
 	def PerformUpgrade(self, owner):
 		actor = self._GetTankByOwner(owner)
@@ -230,13 +281,10 @@ class GameController:
 			self.gameRules.goldTransferRule.PerformTransferGold(actor, target, amount)
 		
 	def _GiveTankAttackDrops(self, tank, attackDrops):
-		self._GiveTankAp(tank, attackDrops.AP)
+		tank.GainAp(attackDrops.AP)
 		tank.GainGold(attackDrops.gold)
 		tank.kills += attackDrops.kills
 		tank.lives += attackDrops.lives
-		
-	def _GiveTankAp(self, tank, amount):
-		tank.AP = min(self.gameRules.GetMaxAp(tank), tank.AP + amount)
 
 	def _DetermineTradeValue(self, amount):
 		if amount % 3 != 0: raise Exception("Must trade gold in multiples of three")
