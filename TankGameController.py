@@ -289,9 +289,6 @@ class GameController:
 	def _DetermineTradeValue(self, amount):
 		if amount % 3 != 0: raise Exception("Must trade gold in multiples of three")
 		return amount // 3
-
-	def _DetermineShareCost(self, amount):
-		return 0
 		
 	def _GetTankByOwner(self, owner):
 		for tank in self.tanks:
