@@ -4,6 +4,7 @@ from collections import namedtuple
 logger = logging.getLogger(__name__)
 
 STARTING_LIVES = 3
+STARTING_MAX_LIVES = 3
 STARTING_RANGE = 2
 
 Position = namedtuple("Position", ["x", "y"])
@@ -15,6 +16,7 @@ class Tank:
 		self.position = position
 		self.owner = owner
 		self.lives = STARTING_LIVES
+		self.maxLives = STARTING_MAX_LIVES
 		self.AP = 0
 		self.maxAp = 0
 		self._gold = 0
@@ -26,6 +28,15 @@ class Tank:
 		self._totalGold = 0
 
 		self.tile = tile if tile is not None else self.owner[:2]
+		
+	def HasLife(self, amount = 1):
+		return self.lives >= amount
+		
+	def LoseLife(self, amount = 1):
+		self.lives = max(0, self.lives - amount)
+		
+	def GainLife(self, amount = 1):
+		self.lives = min(self.maxLives, self.lives + amount)
 		
 	def HasAp(self, amount = 1):
 		return self.AP >= amount

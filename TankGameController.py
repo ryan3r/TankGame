@@ -121,8 +121,8 @@ class GiveApRule(ABC):
 		
 class OncePerDayGiveApRule(GiveApRule):
 
-	def __init__(self):
-		self.OnStartOfDay()
+	def __init__(self, list_ref):
+		self.actorList = list_ref
 	
 	def CanGiveAp(self, actor, target, amount):
 		if amount is not 1: raise Exception("May only give one AP per day")
@@ -153,10 +153,59 @@ class NoGiveApRule(GiveApRule):
 		
 	def OnStartOfDay(self):
 		return
+		
+class GiveLifeRule(ABC):
+	
+	@abstractmethod
+	def CanGiveLife(self, actor, target, amount):
+		pass
+		
+	@abstractmethod
+	def PerformGiveLife(self, actor, target, amount):
+		pass
+		
+	@abstractmethod
+	def OnStartOfDay(self):
+		pass
+		
+class OncePerDayGiveLifeRule(GiveLifeRule):
+
+	def __init__(self, list_ref):
+		self.actorList = list_ref
+	
+	def CanGiveLife(self, actor, target, amount):
+		if amount is not 1: raise Exception("May only give one Life per day")
+		if actor in self.actorList: return False
+		if not actor.HasLife(): return False
+		dist = Distance(actor.position, target.position)
+		if dist > actor.range: return False
+		return True
+		
+	def PerformGiveLife(self, actor, target, amount):
+		self.actorList.append(actor)
+		actor.LoseLife()
+		target.GainLife()
+		
+	def OnStartOfDay(self):
+		self.actorList = []
+		
+class NoGiveLifeRule(GiveApRule):
+
+	def __init__(self):
+		return
+	
+	def CanGiveLife(self, actor, target, amount):
+		return False
+		
+	def PerformGiveLife(self, actor, target, amount):
+		raise Exception("The rules forbid giving Lives")
+		
+	def OnStartOfDay(self):
+		return
 
 class GameRules:
 	
-	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy, moveRule, goldTransferRule, giveApRule):
+	def __init__(self, startingGold, maxAp, fireApCost, apPerTurn, wallDur, rangeIncreasePolicy, moveRule, goldTransferRule, giveApRule, giveLifeRule):
 		self._fireApCost = fireApCost
 		self._maxAp = maxAp
 		self._startingGold = startingGold
@@ -166,9 +215,11 @@ class GameRules:
 		self.moveRule = moveRule
 		self.goldTransferRule = goldTransferRule
 		self.giveApRule = giveApRule
+		self.giveLifeRule = giveLifeRule
 		
 	def OnStartOfDay(self):
 		self.giveApRule.OnStartOfDay()
+		self.giveLifeRule.OnStartOfDay()
 		
 	def GetFireApCost(self, tank):
 		return self._fireApCost
@@ -251,15 +302,11 @@ class GameController:
 		if self.gameRules.giveApRule.CanGiveAp(actor, target, amount):
 			self.gameRules.giveApRule.PerformGiveAp(actor, target, amount)
 
-	def PerformShareLife(self, owner, targetOwner):
+	def PerformShareLife(self, owner, targetOwner, amount = 1):
 		target = self._GetTankByOwner(targetOwner)
 		actor = self._GetTankByOwner(owner)
-		dist = Distance(actor.position, target.position)
-		if dist > actor.range: raise Exception("target is out of range.")
-		# TODO: check if player has done share today
-		actor.lives -= 1
-		# TODO: check if player is dead now
-		if target.lives != 3: target.lives += 1
+		if self.gameRules.giveLifeRule.CanGiveLife(actor, target, amount):
+			self.gameRules.giveLifeRule.PerformGiveLife(actor, target, amount)
 
 	def PerformTradeGold(self, owner, amount):
 		actor = self._GetTankByOwner(owner)

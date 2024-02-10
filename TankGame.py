@@ -121,6 +121,7 @@ def SetupSeason2():
 def GetSeason2GameRules():
 	rip = ApCostRangeIncreasePolicy(ap_cost = 5)
 	mvRule = ApCostMoveRule(ap_cost = 1)
+	shareActions_sharedList = []
 	return GameRules(startingGold = 0, 
 					 maxAp = 9, 
 					 fireApCost = 2, 
@@ -129,7 +130,8 @@ def GetSeason2GameRules():
 					 rangeIncreasePolicy = rip, 
 					 moveRule = mvRule, 
 					 goldTransferRule = NoGoldTransferRule(),
-					 giveApRule = OncePerDayGiveApRule())
+					 giveApRule = OncePerDayGiveApRule(shareActions_sharedList),
+					 giveLifeRule = OncePerDayGiveLifeRule(shareActions_sharedList))
 	
 def SetupSeason3():
 	fourCornersMapBuilder = BuildFourCornersMap()
@@ -168,7 +170,8 @@ def GetSeason3GameRules():
 					 rangeIncreasePolicy = rip, 
 					 moveRule = mvRule, 
 					 goldTransferRule = TaxedGoldTransferRule(1, None),
-					 giveApRule = NoGiveApRule())
+					 giveApRule = NoGiveApRule(),
+					 giveLifeRule = NoGiveLifeRule())
 
 if __name__ == "__main__":
 	
