@@ -1,9 +1,22 @@
 import unittest
-from TankGame import Board, Position, Wall, Tank
+from Entities import Board, Position, Wall, Tank
+from TankGameInteractor import AlgebraicNotationToPosition
 
 WIDTH = 9
 HEIGHT = 7
 
+class NotationTest(unittest.TestCase):
+	def test_A1_convert(self):
+		position = AlgebraicNotationToPosition("A1")
+		self.assertEqual(position, Position(0, 0))
+
+	def test_C3_convert(self):
+		position = AlgebraicNotationToPosition("C3")
+		self.assertEqual(position, Position(2, 2))
+
+	def test_K11_convert(self):
+		position = AlgebraicNotationToPosition("K11")
+		self.assertEqual(position, Position(10, 10))
 
 class TestBoard(unittest.TestCase):
     def _make_board(self):
@@ -44,7 +57,7 @@ class TestBoard(unittest.TestCase):
             Tank(Position(2, 2), "T2"),
             Tank(Position(0, 2), "T3"),
             Tank(Position(2, 0), "T4"),
-            Wall(Position(3, 3))
+            Wall(Position(3, 3), 5)
         ]
 
         # X axis
@@ -68,11 +81,11 @@ class TestBoard(unittest.TestCase):
             Tank(Position(2, 2), "T2"),
             Tank(Position(0, 2), "T3"),
             Tank(Position(2, 0), "T4"),
-            Wall(Position(1, 1)),
-            Wall(Position(0, 1)),
-            Wall(Position(1, 0)),
-            Wall(Position(2, 1)),
-            Wall(Position(1, 2)),
+            Wall(Position(1, 1), 5),
+            Wall(Position(0, 1), 5),
+            Wall(Position(1, 0), 5),
+            Wall(Position(2, 1), 5),
+            Wall(Position(1, 2), 5),
         ]
 
         # X axis
@@ -118,9 +131,9 @@ class TestBoard(unittest.TestCase):
             Tank(Position(0, 0), "T1"),
             Tank(Position(1, 1), "T2"),
             Tank(Position(2, 0), "T3"),
-            Wall(Position(1, 0)),
-            Wall(Position(0, 1)),
-            Wall(Position(2, 1)),
+            Wall(Position(1, 0), 5),
+            Wall(Position(0, 1), 5),
+            Wall(Position(2, 1), 5),
         ]
 
         self._check_line_of_sight(0, 1, True) # T1 can't see T2
@@ -132,7 +145,7 @@ class TestBoard(unittest.TestCase):
         """
         self.entities = [
             Tank(Position(0, 0), "T1"),
-            Wall(Position(1, 0)),
+            Wall(Position(1, 0), 5),
             Tank(Position(2, 0), "T2"),
         ]
 
